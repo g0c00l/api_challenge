@@ -1,4 +1,10 @@
-package com.disney.studios;
+package com.disney.studios.service;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
+import javax.sql.DataSource;
 
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -6,10 +12,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 
-import javax.sql.DataSource;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import com.disney.studios.constants.ApplicationConstants;
+import com.disney.studios.dto.Dog;
+import com.disney.studios.repository.DogRepository;
 
 /**
  * Loads stored objects from the file system and builds up
@@ -35,6 +40,10 @@ public class PetLoader implements InitializingBean {
     @Autowired
     DataSource dataSource;
 
+    
+    @Autowired
+    DogRepository dogRepository;
+
     /**
      * Load the different breeds into the data source after
      * the application is ready.
@@ -43,10 +52,10 @@ public class PetLoader implements InitializingBean {
      */
     @Override
     public void afterPropertiesSet() throws Exception {
-        loadBreed("Labrador", labradors);
-        loadBreed("Pug", pugs);
-        loadBreed("Retriever", retrievers);
-        loadBreed("Yorkie", yorkies);
+        loadBreed(ApplicationConstants.LABORDOR, labradors);
+        loadBreed(ApplicationConstants.PUG, pugs);
+        loadBreed(ApplicationConstants.RETREIVER, retrievers);
+        loadBreed(ApplicationConstants.YORKIE, yorkies);
     }
 
     /**
@@ -60,11 +69,35 @@ public class PetLoader implements InitializingBean {
         try ( BufferedReader br = new BufferedReader(new InputStreamReader(source.getInputStream()))) {
             String line;
             while ((line = br.readLine()) != null) {
-                System.out.println(line);
-                /* TODO: Create appropriate objects and save them to
-                 *       the datasource.
-                 */
+              if(breed.equalsIgnoreCase(ApplicationConstants.LABORDOR))
+              {
+            	  insertDog(ApplicationConstants.LABORDOR,line);
+              }
+              else if(breed.equalsIgnoreCase(ApplicationConstants.PUG))
+              {
+            	  insertDog(ApplicationConstants.PUG,line);
+              }
+              else if(breed.equalsIgnoreCase(ApplicationConstants.RETREIVER))
+              {
+            	  insertDog(ApplicationConstants.RETREIVER,line);
+              }
+              else if(breed.equalsIgnoreCase(ApplicationConstants.YORKIE))
+              {
+            	  insertDog(ApplicationConstants.YORKIE,line);
+              }
             }
         }
     }
+  //  String dogBreed, String imgURL, String favCount, String details
+	private void insertDog(String dogBreed, String imgURL)  {
+	
+		Dog dog = new Dog(dogBreed,imgURL,constructDetails(dogBreed,imgURL));
+		
+		dogRepository.save(dog);
+	}
+
+	private String constructDetails(String dogBreed, String imgURL) {
+		// TODO Auto-generated method stub
+		return "Dog Breed: "+dogBreed+" imageUrl: "+ imgURL;
+	}
 }
